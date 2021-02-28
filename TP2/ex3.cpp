@@ -1,8 +1,21 @@
 #include "exercises.h"
 
+bool changeMaking(unsigned int C[], unsigned int Stock[], unsigned int n, unsigned int T, unsigned int usedCoins[], unsigned sum) {
+    if(n == 0) return false;
+
+    for(int attempt = 0; attempt <= Stock[0]; attempt++) {
+        usedCoins[0] = attempt;
+
+        if(sum + attempt*C[0] == T) return true;
+        else if(n>1 && changeMaking(C+1, Stock+1, n-1, T, usedCoins+1, sum + attempt*C[0])) return true;
+    }
+
+    usedCoins[0] = 0;
+    return false;
+}
+
 bool changeMakingBacktracking(unsigned int C[], unsigned int Stock[], unsigned int n, unsigned int T, unsigned int usedCoins[]) {
-    //TODO
-	return false;
+    return changeMaking(C, Stock, n, T, usedCoins, 0);
 }
 
 /// TESTS ///

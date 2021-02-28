@@ -64,11 +64,9 @@ bool Sudoku::solve() {
     for(unsigned k = 1; k <= 9; k++) {
         if(accepts(minLine, minCol, k)) {
             place(minLine, minCol, k);
-            if(solve()) {
+            if(solve())
                 return true;
-            } else {
-                clear(minLine, minCol);
-            }
+            clear(minLine, minCol);
         }
     }
 
