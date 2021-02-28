@@ -2,6 +2,7 @@
 
 #include "exercises.h"
 #include <algorithm>
+#include <iostream>
 
 bool Activity::operator==(const Activity &a2) const {
     return start == a2.start && finish == a2.finish;
@@ -11,10 +12,22 @@ bool Activity::operator<(const Activity &a2) const {
     return finish < a2.finish;
 }
 
-std::vector<Activity> earliestFinishScheduling(std::vector<Activity> A) {
-    //TODO...
+std::vector<Activity> earliestFinishScheduling(const std::vector<Activity>& A) {
+    std::vector<Activity> res = A;
 
-    std::vector<Activity> res;
+    std::sort(res.begin(), res.end());
+
+    unsigned i = 0;
+    while(i < res.size()-1) {
+        if(
+                (res[i].start > res[i+1].start && res[i].start < res[i+1].finish) ||
+                (res[i].start == res[i+1].start) ||
+                (res[i].finish > res[i+1].start))
+            res.erase(res.begin()+i+1);
+        else {
+            i++;
+        }
+    }
 
     return res;
 }

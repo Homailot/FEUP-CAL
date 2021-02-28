@@ -29,7 +29,7 @@ public:
     bool operator==(const Activity &a2) const;
     bool operator<(const Activity &a2) const;
 };
-std::vector<Activity> earliestFinishScheduling(std::vector<Activity> A);
+std::vector<Activity> earliestFinishScheduling(const std::vector<Activity>& A);
 
 // Ex 7
 double minimumAverageCompletionTime(std::vector<unsigned int> tasks, std::vector<unsigned int> &orderedTasks);

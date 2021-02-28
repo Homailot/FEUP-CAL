@@ -2,6 +2,7 @@
 
 #include "exercises.h"
 
+// try nº 1
 //std::vector<std::vector<int>> getCombinations(unsigned int C[], unsigned int Stock[], unsigned int n, unsigned usedCoins[]) {
 //    std::vector<std::vector<int>> combinations;
 //    std::vector<std::vector<int>> previousCombinations;
@@ -25,6 +26,7 @@
 //    return combinations;
 //}
 
+// try nº 2
 //bool getCombinations(unsigned int C[], unsigned int Stock[], unsigned T, unsigned int n, unsigned sum, unsigned usedCoins[]) {
 //    if(n == 0) return false;
 //
@@ -48,32 +50,57 @@ unsigned sumC(unsigned int C[], unsigned n, unsigned int usedCoins[]) {
     return sum;
 }
 
+unsigned int sumArray(const unsigned int a[], unsigned int n) {
+    unsigned int sum = 0;
+    for(unsigned int i = 0; i < n; i++) {
+        sum += a[i];
+    }
+    return sum;
+}
+
+void copyArray(const unsigned int from[], unsigned to[], unsigned int n) {
+    for(unsigned int i = 0; i< n; i++) {
+        to[i] = from[i];
+    }
+}
+
+#include <iostream>
+
 bool changeMakingBF(unsigned int C[], unsigned int Stock[], unsigned int n, unsigned int T, unsigned int usedCoins[]) {
     int pos;
+    auto * usedCoinsCur = static_cast<unsigned int *>(malloc(sizeof(unsigned) * n));
+    bool found = false;
+    uint32_t minNum = UINT32_MAX;
+    uint32_t sum;
 
     for(int i = 0; i < n; i++) {
-        usedCoins[i] = 0;
+        usedCoinsCur[i] = 0;
     }
 
     while(true) {
         pos = (int)n-1;
 
         for(int i = 0; i <= Stock[pos]; i++) {
-            usedCoins[pos] = i;
-            if(sumC(C, n, usedCoins) == T) {
-                return true;
+            usedCoinsCur[pos] = i;
+            if(sumC(C, n, usedCoinsCur) == T) {
+                if((sum = sumArray(usedCoinsCur, n)) < minNum) {
+                    minNum = sum;
+                    copyArray(usedCoinsCur, usedCoins, n);
+                    found = true;
+                }
             }
         }
 
-        while(pos >= 0 && usedCoins[pos] == Stock[pos]) {
-            usedCoins[pos] = 0;
+        while(pos >= 0 && usedCoinsCur[pos] == Stock[pos]) {
+            usedCoinsCur[pos] = 0;
             pos--;
         }
         if(pos == -1) break;
-        usedCoins[pos]++;
+        usedCoinsCur[pos]++;
     }
 
-    return false;
+    free(usedCoinsCur);
+    return found;
 }
 
 /// TESTS ///
