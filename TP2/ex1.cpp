@@ -4,6 +4,8 @@ Labyrinth::Labyrinth(int values[10][10]) {
     for (int i = 0; i < 10; i++)
         for (int j = 0; j < 10; j++)
             labyrinth[i][j] = values[i][j];
+
+    initializeVisited();
 }
 
 #include <iostream>
@@ -18,14 +20,23 @@ void  Labyrinth::print() const {
 }
 
 bool Labyrinth::findGoal(int x, int y) {
-    //TODO
+    if(visited[y][x] || labyrinth[y][x] == 0) return false;
+    else if(labyrinth[y][x]==2) return true;
+
+    visited[y][x] = true;
+
+    if(x-1 >= 0 && findGoal(x - 1, y)) return true;
+    else if (x + 1 < 10  && findGoal(x + 1, y)) return true;
+    else if (y - 1 >= 0 && findGoal(x, y-1)) return true;
+    else if (y + 1 < 10 && findGoal(x, y+1)) return true;
+
     return false;
 }
 
 void Labyrinth::initializeVisited() {
-    for(int i = 0; i < 10; i++)
-        for(int j = 0; j < 10; j++)
-            visited[i][j] = false;
+    for(auto & i : visited)
+        for(bool & j : i)
+            j = false;
 }
 
 /// TESTS ///

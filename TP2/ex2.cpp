@@ -37,7 +37,41 @@ bool Sudoku::isComplete() const {
 }
 
 bool Sudoku::solve() {
-    //TODO
+    if(isComplete()) return true;
+
+    unsigned possibleVals;
+    unsigned minPossible = 10;
+    unsigned minLine = 10, minCol = 10;
+
+    for(unsigned line = 0; line < 9; line++) {
+        for(unsigned col = 0; col < 9; col++) {
+            if(numbers[line][col] != 0) continue;
+
+            possibleVals = 0;
+            for(unsigned k = 1; k <= 9; k++) {
+                if(accepts(line, col, k)) possibleVals++;
+            }
+
+            if(possibleVals < minPossible) {
+                minPossible = possibleVals;
+                minLine = line; minCol = col;
+            }
+        }
+    }
+
+    if(minPossible == 0) return false;
+
+    for(unsigned k = 1; k <= 9; k++) {
+        if(accepts(minLine, minCol, k)) {
+            place(minLine, minCol, k);
+            if(solve()) {
+                return true;
+            } else {
+                clear(minLine, minCol);
+            }
+        }
+    }
+
     return false;
 }
 
@@ -71,8 +105,9 @@ void Sudoku::print() const {
 }
 
 bool Sudoku::accepts(int i, int j, int n) {
-	//TODO
-    return false;
+    if(columnHasNumber[j][n] || lineHasNumber[i][n] || block3x3HasNumber[i/3][j/3][n]) return false;
+
+    return true;
 }
 
 void Sudoku::place(int i, int j, int n) {
