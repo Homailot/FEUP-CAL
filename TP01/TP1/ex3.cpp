@@ -1,8 +1,6 @@
 // By: Gonçalo Leão
 
 #include "exercises.h"
-#include <stdio.h>
-#include <vector>
 
 //std::vector<std::vector<int>> getCombinations(unsigned int C[], unsigned int Stock[], unsigned int n, unsigned usedCoins[]) {
 //    std::vector<std::vector<int>> combinations;
@@ -27,28 +25,55 @@
 //    return combinations;
 //}
 
-bool getCombinations(unsigned int C[], unsigned int Stock[], unsigned T, unsigned int n, unsigned sum, unsigned usedCoins[]) {
-    if(n == 0) return false;
+//bool getCombinations(unsigned int C[], unsigned int Stock[], unsigned T, unsigned int n, unsigned sum, unsigned usedCoins[]) {
+//    if(n == 0) return false;
+//
+//    for(int attempt = 0; attempt <= Stock[0]; attempt++) {
+//        usedCoins[0] = attempt;
+//
+//        if(sum + attempt*C[0] == T) return true;
+//        else if(n>1 && getCombinations(C+1, Stock+1, T, n-1, sum + attempt*C[0], usedCoins+1)) return true;
+//    }
+//    usedCoins[0] = 0;
+//    return false;
+//}
 
-    for(int attempt = 0; attempt <= Stock[0]; attempt++) {
-        usedCoins[0] = attempt;
+unsigned sumC(unsigned int C[], unsigned n, unsigned int usedCoins[]) {
+    unsigned sum = 0;
 
-        if(sum + attempt*C[0] == T) return true;
-        else if(n>1 && getCombinations(C+1, Stock+1, T, n-1, sum + attempt*C[0], usedCoins+1)) return true;
+    for(int i = 0; i < n; i++) {
+        sum += usedCoins[i] * C[i];
     }
-    usedCoins[0] = 0;
-    return false;
+
+    return sum;
 }
 
 bool changeMakingBF(unsigned int C[], unsigned int Stock[], unsigned int n, unsigned int T, unsigned int usedCoins[]) {
-    bool test = getCombinations(C, Stock, T, n, 0, usedCoins);
+    int pos;
 
     for(int i = 0; i < n; i++) {
-        printf("%d,", usedCoins[i]);
+        usedCoins[i] = 0;
     }
-    printf("\n");
 
-    return test;
+    while(true) {
+        pos = (int)n-1;
+
+        for(int i = 0; i <= Stock[pos]; i++) {
+            usedCoins[pos] = i;
+            if(sumC(C, n, usedCoins) == T) {
+                return true;
+            }
+        }
+
+        while(pos >= 0 && usedCoins[pos] == Stock[pos]) {
+            usedCoins[pos] = 0;
+            pos--;
+        }
+        if(pos == -1) break;
+        usedCoins[pos]++;
+    }
+
+    return false;
 }
 
 /// TESTS ///
