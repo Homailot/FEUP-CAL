@@ -76,12 +76,85 @@ bool Sudoku::solve() {
 }
 
 int Sudoku::countSolutions() {
-    //TODO
-    return 0;
+    if(isComplete()) return 1;
+    unsigned solutions = 0;
+
+    unsigned possibleVals;
+    unsigned minPossible = 10;
+    unsigned minLine = 10, minCol = 10;
+
+    for(unsigned line = 0; line < 9; line++) {
+        for(unsigned col = 0; col < 9; col++) {
+            if(numbers[line][col] != 0) continue;
+
+            possibleVals = 0;
+            for(unsigned k = 1; k <= 9; k++) {
+                if(accepts(line, col, k)) possibleVals++;
+            }
+
+            if(possibleVals < minPossible) {
+                minPossible = possibleVals;
+                minLine = line; minCol = col;
+            }
+        }
+    }
+
+    if(minPossible == 0) return 0;
+
+    for(unsigned k = 1; k <= 9; k++) {
+        if(accepts(minLine, minCol, k)) {
+            place(minLine, minCol, k);
+            solutions += countSolutions();
+            if(solutions > 5) break;
+            clear(minLine, minCol);
+        }
+    }
+
+    return solutions;
 }
 
+#include <stdlib.h>     /* srand, rand */
+#include <random>
+
+
+//void Sudoku::generate() {
+//    unsigned col, line, num, solutions;
+//
+//	while(true) {
+//        col = rand() % 9;
+//        line = rand() % 9;
+//        num = rand() % 9 + 1;
+//
+//        if(accepts(line, col, num)) {
+//            place(line, col, num);
+//            solutions = countSolutions();
+//            if(solutions == 0) clear(line,col);
+//            if(solutions == 1) return;
+//        }
+//	}
+//}
+
 void Sudoku::generate() {
-	//TODO
+    unsigned col, line, num, solutions;
+
+    std::random_device rd;
+    std::mt19937 rng(rd());
+    std::uniform_int_distribution<int> genPos(0, 8);
+    std::uniform_int_distribution<int> genNum(1, 9);
+
+
+    while(true) {
+        col = genPos(rng);
+        line = genPos(rng);
+        num = genNum(rng);
+
+        if(accepts(line, col, num)) {
+            place(line, col, num);
+            solutions = countSolutions();
+            if(solutions == 0) clear(line,col);
+            if(solutions == 1) return;
+        }
+	}
 }
 
 int** Sudoku::getNumbers() {
@@ -173,6 +246,9 @@ TEST(TP2_Ex2, testSudokuAlreadySolved) {
             out[i][a] = res[i][a];
 
     compareSudokus(in, out);
+
+    s = Sudoku(in);
+    std::cout << s.countSolutions();
 }
 
 TEST(TP2_Ex2, testSudokuNoneBackStepsRequired) {
@@ -209,6 +285,9 @@ TEST(TP2_Ex2, testSudokuNoneBackStepsRequired) {
             sout[i][a] = res[i][a];
 
     compareSudokus(out, sout);
+
+    s = Sudoku(in);
+    std::cout << s.countSolutions();
 }
 
 TEST(TP2_Ex2, testSudokuSomeBackStepsRequired) {
@@ -245,6 +324,9 @@ TEST(TP2_Ex2, testSudokuSomeBackStepsRequired) {
             sout[i][a] = res[i][a];
 
     compareSudokus(out, sout);
+
+    s = Sudoku(in);
+    std::cout << s.countSolutions();
 }
 
 TEST(TP2_Ex2, testSudokuManyBackStepsRequired) {
@@ -281,6 +363,9 @@ TEST(TP2_Ex2, testSudokuManyBackStepsRequired) {
             sout[i][a] = res[i][a];
 
     compareSudokus(out, sout);
+
+    s = Sudoku(in);
+    std::cout << s.countSolutions();
 }
 
 TEST(TP2_Ex2, testSudokuWithMinimalClues) {
@@ -317,6 +402,9 @@ TEST(TP2_Ex2, testSudokuWithMinimalClues) {
             sout[i][a] = res[i][a];
 
     compareSudokus(out, sout);
+
+    s = Sudoku(in);
+    std::cout << s.countSolutions();
 }
 
 TEST(TP2_Ex2, testSudokuWithMultipleSolutions) {
@@ -338,6 +426,9 @@ TEST(TP2_Ex2, testSudokuWithMultipleSolutions) {
         for (int j=0; j<9; j++)
             if (in[i][j] != 0)
                 EXPECT_EQ(in[i][j], out[i][j]);
+
+    s = Sudoku(in);
+    std::cout << s.countSolutions();
 }
 
 TEST(TP2_Ex2, testSudokuEmpty) {
@@ -355,6 +446,9 @@ TEST(TP2_Ex2, testSudokuEmpty) {
     Sudoku s(in);
     EXPECT_EQ(s.solve(), true);
     EXPECT_EQ(s.isComplete(), true);
+
+    s = Sudoku(in);
+    std::cout << s.countSolutions();
 }
 
 TEST(TP2_Ex2, testSudokuImpossible) {
@@ -380,4 +474,27 @@ TEST(TP2_Ex2, testSudokuImpossible) {
             out[i][a] = res[i][a];
 
     compareSudokus(in, out);
+
+    s = Sudoku(in);
+    std::cout << s.countSolutions();
+}
+
+TEST(TP2_Ex2, testSudokuGen) {
+    int in[9][9] =
+            {{0, 0, 0, 0, 0, 0, 0, 0, 0},
+             {0, 0, 0, 0, 0, 0, 0, 0, 0},
+             {0, 0, 0, 0, 0, 0, 0, 0, 0},
+             {0, 0, 0, 0, 0, 0, 0, 0, 0},
+             {0, 0, 0, 0, 0, 0, 0, 0, 0},
+             {0, 0, 0, 0, 0, 0, 0, 0, 0},
+             {0, 0, 0, 0, 0, 0, 0, 0, 0},
+             {0, 0, 0, 0, 0, 0, 0, 0, 0},
+             {0, 0, 0, 0, 0, 0, 0, 0, 0}};
+
+    Sudoku s(in);
+    std::cout << "--------------------generating-----------" << std::endl;
+    s.generate();
+    s.print();
+    std::cout << std::endl << s.solve() << std::endl << std::endl;
+    s.print();
 }
