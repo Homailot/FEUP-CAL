@@ -8,9 +8,33 @@ bool Activity::overlaps(const Activity &a2) const {
     return (start < a2.finish) && (a2.start < finish);
 }
 
+static std::vector<Activity> best;
+
+void activitySelection(std::vector<Activity>& A, std::vector<Activity>& chosen) {
+    for(auto activityIt = A.begin(); activityIt != A.end(); activityIt++) {
+        auto activity = *activityIt;
+
+        if(chosen.empty() || (!activity.overlaps(chosen.back()) && activity.start > chosen.back().finish)) {
+            activityIt = A.erase(activityIt);
+            chosen.push_back(activity);
+
+            if(chosen.size() > best.size()) {
+                best = chosen;
+            }
+
+            activitySelection(A, chosen);
+
+            A.insert(activityIt, activity);
+            chosen.pop_back();
+        }
+    }
+}
+
 std::vector<Activity> activitySelectionBacktracking(std::vector<Activity> A) {
-    //TODO
-    return A;
+    std::vector<Activity> chosen;
+
+    activitySelection(A, chosen);
+    return best;
 }
 
 /// TESTS ///
