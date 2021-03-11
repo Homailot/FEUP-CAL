@@ -146,11 +146,92 @@ Result nearestPoints_DC_inner(std::vector<Point> &vp) {
     return res;
 }
 
+Result nearestPoints_DC_y_inner(std::vector<Point> &vp) {
+    Result res, possible_res;
+
+    switch (vp.size()) {
+        case 2:
+            res.p1 = vp.front();
+            res.p2 = vp.back();
+            res.dmin = res.p1.distSquare(res.p2);
+
+            return res;
+        case 1:
+        case 0:
+            res.dmin = MAX_DOUBLE;
+
+            return res;
+    }
+
+    size_t middle = vp.size()/2;
+    double middle_strip = vp.at(middle).x;
+    std::vector<Point> left_half(vp.begin(), vp.begin() + middle);
+    std::vector<Point> right_half(vp.begin() + middle, vp.end());
+
+    res = nearestPoints_DC_inner(left_half);
+    possible_res = nearestPoints_DC_inner(right_half);
+    if(possible_res.dmin < res.dmin) {
+        res = possible_res;
+    }
+
+    if(res.p1 == res.p2) return res;
+
+    double dist_to_middle;
+
+    std::vector<Point> left_strip = std::vector<Point>();
+    std::vector<Point> right_strip = std::vector<Point>();
+
+    for(auto piIt = left_half.rbegin(); piIt != left_half.rend(); piIt++) {
+        auto pi = *piIt;
+        dist_to_middle = middle_strip - pi.x;
+
+        if(dist_to_middle*dist_to_middle > res.dmin) break;
+
+        left_strip.push_back(pi);
+    }
+
+    for(auto pj : right_half) {
+        dist_to_middle = pj.x - middle_strip;
+
+        if(dist_to_middle*dist_to_middle > res.dmin) break;
+
+        right_strip.push_back(pj);
+    }
+
+    sortByY(left_strip, 0, left_strip.size());
+    sortByY(right_strip, 0, right_strip.size());
+
+    for(auto pi:left_strip) {
+        for(auto pj:right_strip) {
+            if(fabs(pi.y-pj.y) > res.dmin) break;
+
+            possible_res.dmin = pi.distSquare(pj);
+            if(possible_res.dmin < res.dmin) {
+                res.dmin = possible_res.dmin;
+                res.p1 = pi;
+                res.p2 = pj;
+            }
+        }
+    }
+
+    return res;
+}
+
 Result nearestPoints_DC(std::vector<Point> &vp) {
     Result res;
     sortByX(vp, 0, vp.size()-1);
 
     res = nearestPoints_DC_inner(vp);
+    res.dmin = res.p1.distance(res.p2);
+
+    return res;
+}
+
+Result nearestPoints_DC_y(std::vector<Point> &vp) {
+    Result res;
+    sortByX(vp, 0, vp.size()-1);
+
+    res = nearestPoints_DC_y_inner(vp);
     res.dmin = res.p1.distance(res.p2);
 
     return res;
@@ -332,14 +413,14 @@ void testNearestPoints(NP_FUNC func, std::string alg) {
     // Uncomment to use more tests
     if (testNPFile("Pontos32k", 1.0, func, alg) > maxTime)
         return;
-//    if (testNPFile("Pontos64k", 1.0, func, alg) > maxTime)
-//        return;
-//    if (testNPFile("Pontos128k", 0.0, func, alg) > maxTime)
-//        return;
-//    if (testNPRand(0x40000, "Pontos256k", 1.0, func, alg) > maxTime)
-//        return;
-//    if (testNPRand(0x80000, "Pontos512k",  1.0, func, alg) > maxTime)
-//        return;
+    if (testNPFile("Pontos64k", 1.0, func, alg) > maxTime)
+        return;
+    if (testNPFile("Pontos128k", 0.0, func, alg) > maxTime)
+        return;
+    if (testNPRand(0x40000, "Pontos256k", 1.0, func, alg) > maxTime)
+        return;
+    if (testNPRand(0x80000, "Pontos512k",  1.0, func, alg) > maxTime)
+        return;
 //    if ( testNPRand(0x100000, "Pontos1M",  1.0, func, alg) > maxTime)
 //        return;
 //    if ( testNPRand(0x200000, "Pontos2M",  1.0, func, alg) > maxTime)
@@ -348,15 +429,19 @@ void testNearestPoints(NP_FUNC func, std::string alg) {
 }
 
 TEST(TP3_Ex1, testNP_BF) {
-    testNearestPoints(nearestPoints_BF, "Brute force");
+    //testNearestPoints(nearestPoints_BF, "Brute force");
 }
 
 TEST(TP3_Ex1, testNP_BF_SortedX) {
-    testNearestPoints(nearestPoints_BF_SortByX, "Brute force, sorted by x");
+    //testNearestPoints(nearestPoints_BF_SortByX, "Brute force, sorted by x");
 }
 
 TEST(TP3_Ex1, testNP_DC) {
     testNearestPoints(nearestPoints_DC, "Divide and conquer");
+}
+
+TEST(TP3_Ex1, testNP_DC_sort_y) {
+    testNearestPoints(nearestPoints_DC_y, "Divide and conquer");
 }
 
 TEST(TP3_Ex1, testNP_DC_2Threads) {
