@@ -217,6 +217,72 @@ Result nearestPoints_DC_y_inner(const std::vector<Point> &vp) {
     return res;
 }
 
+Result nearestPoints_DC_y_inner_lists(const std::vector<Point> &vp, const std::vector<Point> &vq) {
+    Result res, possible_res;
+
+    switch (vp.size()) {
+        case 2:
+            res.p1 = vp.front();
+            res.p2 = vp.back();
+            res.dmin = res.p1.distSquare(res.p2);
+
+            return res;
+        case 1:
+        case 0:
+            res.dmin = MAX_DOUBLE;
+
+            return res;
+    }
+
+    size_t middle = vp.size()/2;
+    double middle_strip = vp.at(middle).x;
+    std::vector<Point> left_half(vp.begin(), vp.begin() + middle);
+    std::vector<Point> right_half(vp.begin() + middle, vp.end());
+    std::vector<Point> left_q;
+    std::vector<Point> right_q;
+
+    for(auto p: vq) {
+        if(p.x < middle_strip) left_q.push_back(p);
+        else if(p.x >= middle_strip) right_q.push_back(p);
+    }
+
+    res = nearestPoints_DC_y_inner_lists(left_half, left_q);
+    possible_res = nearestPoints_DC_y_inner_lists(right_half, right_q);
+    if(possible_res.dmin < res.dmin) {
+        res = possible_res;
+    }
+
+    if(res.p1 == res.p2) return res;
+
+    double dist_to_middle;
+
+    std::vector<Point> strip = std::vector<Point>();
+    for(auto p : vq) {
+        dist_to_middle = fabs(p.x-middle_strip);
+
+        if(dist_to_middle*dist_to_middle > res.dmin) continue;
+
+        strip.push_back(p);
+    }
+
+    for(size_t i = 0; i < strip.size(); i++) {
+        auto pi = strip.at(i);
+        for(size_t j = i + 1; j < strip.size(); j++) {
+            auto pj = strip.at(j);
+            if(fabs(pi.y-pj.y) > res.dmin) break;
+
+            possible_res.dmin = pi.distSquare(pj);
+            if(possible_res.dmin < res.dmin) {
+                res.dmin = possible_res.dmin;
+                res.p1 = pi;
+                res.p2 = pj;
+            }
+        }
+    }
+
+    return res;
+}
+
 Result nearestPoints_DC(std::vector<Point> &vp) {
     Result res;
     sortByX(vp, 0, vp.size()-1);
@@ -232,6 +298,18 @@ Result nearestPoints_DC_y(std::vector<Point> &vp) {
     sortByX(vp, 0, vp.size()-1);
 
     res = nearestPoints_DC_y_inner(vp);
+    res.dmin = res.p1.distance(res.p2);
+
+    return res;
+}
+
+Result nearestPoints_DC_y_lists(std::vector<Point> &vp) {
+    Result res;
+    sortByX(vp, 0, vp.size()-1);
+    std::vector<Point> vq = vp;
+    sortByY(vq, 0, vq.size() - 1);
+
+    res = nearestPoints_DC_y_inner_lists(vp,vq);
     res.dmin = res.p1.distance(res.p2);
 
     return res;
@@ -442,6 +520,10 @@ TEST(TP3_Ex1, testNP_DC) {
 
 TEST(TP3_Ex1, testNP_DC_sort_y) {
     testNearestPoints(nearestPoints_DC_y, "Divide and conquer sort y");
+}
+
+TEST(TP3_Ex1, testNP_DC_sort_y_lists) {
+    testNearestPoints(nearestPoints_DC_y_lists, "Divide and conquer sort y 2 lists");
 }
 
 TEST(TP3_Ex1, testNP_DC_2Threads) {
