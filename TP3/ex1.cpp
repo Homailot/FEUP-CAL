@@ -283,6 +283,71 @@ Result nearestPoints_DC_y_inner_lists(const std::vector<Point> &vp, const std::v
     return res;
 }
 
+#include <future>
+#include <iostream>
+
+Result nearestPoints_DC_inner_thread(const std::vector<Point> &vp, int n_threads) {
+    Result res, possible_res;
+
+    switch (vp.size()) {
+        case 2:
+            res.p1 = vp.front();
+            res.p2 = vp.back();
+            res.dmin = res.p1.distSquare(res.p2);
+
+            return res;
+        case 1:
+        case 0:
+            res.dmin = MAX_DOUBLE;
+
+            return res;
+    }
+
+    size_t middle = vp.size()/2;
+    double middle_strip = vp.at(middle).x;
+    std::vector<Point> left_half(vp.begin(), vp.begin() + middle);
+    std::vector<Point> right_half(vp.begin() + middle, vp.end());
+
+    if(n_threads > 1) {
+        std::future<Result> fp = std::async(std::launch::async, nearestPoints_DC_inner_thread, left_half, n_threads/2);
+        possible_res = nearestPoints_DC_inner_thread(right_half, n_threads / 2);
+        if(fp.valid()) res = fp.get();
+    } else {
+        res = nearestPoints_DC_inner_thread(left_half, 1);
+        possible_res = nearestPoints_DC_inner_thread(right_half, 1);
+    }
+
+    if(possible_res.dmin < res.dmin) {
+        res = possible_res;
+    }
+
+    if(res.p1 == res.p2) return res;
+
+    double dist_to_middle;
+
+    for(auto piIt = left_half.rbegin(); piIt != left_half.rend(); piIt++) {
+        auto pi = *piIt;
+        dist_to_middle = middle_strip - pi.x;
+
+        if(dist_to_middle*dist_to_middle > res.dmin) break;
+
+        for(auto pj : right_half) {
+            dist_to_middle = pj.x - middle_strip;
+
+            if(dist_to_middle*dist_to_middle > res.dmin) break;
+
+            possible_res.dmin = pi.distSquare(pj);
+            if(possible_res.dmin < res.dmin) {
+                res.dmin = possible_res.dmin;
+                res.p1 = pi;
+                res.p2 = pj;
+            }
+        }
+    }
+
+    return res;
+}
+
 Result nearestPoints_DC(std::vector<Point> &vp) {
     Result res;
     sortByX(vp, 0, vp.size()-1);
@@ -315,10 +380,18 @@ Result nearestPoints_DC_y_lists(std::vector<Point> &vp) {
     return res;
 }
 
+
 Result nearestPoints_DC_MT(std::vector<Point> &vp) {
     Result res;
     sortByX(vp, 0, vp.size()-1);
-    //TODO
+    //std::cout << "THREADS AVAIL: " <<  std::thread::hardware_concurrency() << std::endl;
+    if(std::thread::hardware_concurrency() < numThreads) {
+        numThreads = std::thread::hardware_concurrency();
+    }
+
+    res = nearestPoints_DC_inner_thread(vp, numThreads);
+    res.dmin = res.p1.distance(res.p2);
+
     return res;
 }
 
@@ -499,10 +572,10 @@ void testNearestPoints(NP_FUNC func, std::string alg) {
         return;
     if (testNPRand(0x80000, "Pontos512k",  1.0, func, alg) > maxTime)
         return;
-//    if ( testNPRand(0x100000, "Pontos1M",  1.0, func, alg) > maxTime)
-//        return;
-//    if ( testNPRand(0x200000, "Pontos2M",  1.0, func, alg) > maxTime)
-//        return;
+    if ( testNPRand(0x100000, "Pontos1M",  1.0, func, alg) > maxTime)
+        return;
+    if ( testNPRand(0x200000, "Pontos2M",  1.0, func, alg) > maxTime)
+        return;
 
 }
 
@@ -519,11 +592,11 @@ TEST(TP3_Ex1, testNP_DC) {
 }
 
 TEST(TP3_Ex1, testNP_DC_sort_y) {
-    testNearestPoints(nearestPoints_DC_y, "Divide and conquer sort y");
+    //testNearestPoints(nearestPoints_DC_y, "Divide and conquer sort y");
 }
 
 TEST(TP3_Ex1, testNP_DC_sort_y_lists) {
-    testNearestPoints(nearestPoints_DC_y_lists, "Divide and conquer sort y 2 lists");
+    //testNearestPoints(nearestPoints_DC_y_lists, "Divide and conquer sort y 2 lists");
 }
 
 TEST(TP3_Ex1, testNP_DC_2Threads) {
