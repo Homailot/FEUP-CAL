@@ -146,7 +146,7 @@ Result nearestPoints_DC_inner(std::vector<Point> &vp) {
     return res;
 }
 
-Result nearestPoints_DC_y_inner(std::vector<Point> &vp) {
+Result nearestPoints_DC_y_inner(const std::vector<Point> &vp) {
     Result res, possible_res;
 
     switch (vp.size()) {
@@ -168,8 +168,8 @@ Result nearestPoints_DC_y_inner(std::vector<Point> &vp) {
     std::vector<Point> left_half(vp.begin(), vp.begin() + middle);
     std::vector<Point> right_half(vp.begin() + middle, vp.end());
 
-    res = nearestPoints_DC_inner(left_half);
-    possible_res = nearestPoints_DC_inner(right_half);
+    res = nearestPoints_DC_y_inner(left_half);
+    possible_res = nearestPoints_DC_y_inner(right_half);
     if(possible_res.dmin < res.dmin) {
         res = possible_res;
     }
@@ -198,8 +198,8 @@ Result nearestPoints_DC_y_inner(std::vector<Point> &vp) {
         right_strip.push_back(pj);
     }
 
-    sortByY(left_strip, 0, left_strip.size());
-    sortByY(right_strip, 0, right_strip.size());
+    sortByY(left_strip, 0, left_strip.size() - 1);
+    sortByY(right_strip, 0, right_strip.size() - 1);
 
     for(auto pi:left_strip) {
         for(auto pj:right_strip) {
@@ -441,7 +441,7 @@ TEST(TP3_Ex1, testNP_DC) {
 }
 
 TEST(TP3_Ex1, testNP_DC_sort_y) {
-    testNearestPoints(nearestPoints_DC_y, "Divide and conquer");
+    testNearestPoints(nearestPoints_DC_y, "Divide and conquer sort y");
 }
 
 TEST(TP3_Ex1, testNP_DC_2Threads) {
