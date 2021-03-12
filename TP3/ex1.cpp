@@ -84,13 +84,6 @@ Result nearestPoints_BF(std::vector<Point> &vp) {
     return res;
 }
 
-Result nearestPoints_BF_SortByX(std::vector<Point> &vp) {
-    Result res;
-    sortByX(vp, 0, vp.size()-1);
-    //TODO
-    return res;
-}
-
 Result nearestPoints_DC_inner(std::vector<Point> &vp) {
     Result res, possible_res;
 
@@ -348,6 +341,13 @@ Result nearestPoints_DC_inner_thread(const std::vector<Point> &vp, int n_threads
     return res;
 }
 
+Result nearestPoints_BF_SortByX(std::vector<Point> &vp) {
+    Result res;
+    sortByX(vp, 0, vp.size()-1);
+
+    return nearestPoints_BF(vp);
+}
+
 Result nearestPoints_DC(std::vector<Point> &vp) {
     Result res;
     sortByX(vp, 0, vp.size()-1);
@@ -570,12 +570,12 @@ void testNearestPoints(NP_FUNC func, std::string alg) {
         return;
     if (testNPRand(0x40000, "Pontos256k", 1.0, func, alg) > maxTime)
         return;
-    if (testNPRand(0x80000, "Pontos512k",  1.0, func, alg) > maxTime)
-        return;
-    if ( testNPRand(0x100000, "Pontos1M",  1.0, func, alg) > maxTime)
-        return;
-    if ( testNPRand(0x200000, "Pontos2M",  1.0, func, alg) > maxTime)
-        return;
+//    if (testNPRand(0x80000, "Pontos512k",  1.0, func, alg) > maxTime)
+//        return;
+//    if ( testNPRand(0x100000, "Pontos1M",  1.0, func, alg) > maxTime)
+//        return;
+//    if ( testNPRand(0x200000, "Pontos2M",  1.0, func, alg) > maxTime)
+//        return;
 
 }
 
@@ -584,13 +584,13 @@ void testNearestPoints(NP_FUNC func, std::string alg) {
 //}
 //
 //TEST(TP3_Ex1, testNP_BF_SortedX) {
-//    //testNearestPoints(nearestPoints_BF_SortByX, "Brute force, sorted by x");
+//    testNearestPoints(nearestPoints_BF_SortByX, "Brute force, sorted by x");
 //}
 //
-//TEST(TP3_Ex1, testNP_DC) {
-//    testNearestPoints(nearestPoints_DC, "Divide and conquer");
-//}
-//
+TEST(TP3_Ex1, testNP_DC) {
+    testNearestPoints(nearestPoints_DC, "Divide and conquer");
+}
+
 //TEST(TP3_Ex1, testNP_DC_sort_y) {
 //    //testNearestPoints(nearestPoints_DC_y, "Divide and conquer sort y");
 //}
@@ -599,17 +599,17 @@ void testNearestPoints(NP_FUNC func, std::string alg) {
 //    //testNearestPoints(nearestPoints_DC_y_lists, "Divide and conquer sort y 2 lists");
 //}
 //
-//TEST(TP3_Ex1, testNP_DC_2Threads) {
-//    setNumThreads(2);
-//    testNearestPoints(nearestPoints_DC_MT, "Divide and conquer with 2 threads");
-//}
-//
-//TEST(TP3_Ex1, testNP_DC_4Threads) {
-//    setNumThreads(4);
-//    testNearestPoints(nearestPoints_DC_MT, "Divide and conquer with 4 threads");
-//}
-//
-//TEST(TP3_Ex1, testNP_DC_8Threads) {
-//    setNumThreads(8);
-//    testNearestPoints(nearestPoints_DC_MT, "Divide and conquer with 8 threads");
-//}
+TEST(TP3_Ex1, testNP_DC_2Threads) {
+    setNumThreads(2);
+    testNearestPoints(nearestPoints_DC_MT, "Divide and conquer with 2 threads");
+}
+
+TEST(TP3_Ex1, testNP_DC_4Threads) {
+    setNumThreads(4);
+    testNearestPoints(nearestPoints_DC_MT, "Divide and conquer with 4 threads");
+}
+
+TEST(TP3_Ex1, testNP_DC_8Threads) {
+    setNumThreads(8);
+    testNearestPoints(nearestPoints_DC_MT, "Divide and conquer with 8 threads");
+}
