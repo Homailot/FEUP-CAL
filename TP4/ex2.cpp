@@ -18,12 +18,12 @@ bool changeMakingUnlimitedDP(unsigned int C[], unsigned int n, unsigned int T, u
         for(int change = 0; change <= T; change++) {
             if(change == 0) {
                 min_coins[max_coin][change] = 0;
-                last_coin[max_coin][change] = 0;
+                last_coin[max_coin][change] = err;
 
                 continue;
             } else if(max_coin == 0) {
                 min_coins[max_coin][change] = err;
-                last_coin[max_coin][change] = 0;
+                last_coin[max_coin][change] = err;
 
                 continue;
             }
