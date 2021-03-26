@@ -293,8 +293,40 @@ std::vector<T> Graph<T>::bfs(const T & source) const {
 
 template<class T>
 std::vector<T> Graph<T>::topsort() const {
-    // TODO (26 lines)
     std::vector<T> res;
+    Vertex<T> * adj;
+
+    for(auto vertex : vertexSet) vertex->indegree = 0;
+
+    for(auto vertex : vertexSet) {
+        for(auto edge: vertex->adj) {
+            adj = edge.dest;
+
+            adj->indegree++;
+        }
+    }
+    std::queue<Vertex<T>*> candidates;
+
+    for(auto vertex : vertexSet) if(vertex->indegree == 0) candidates.push(vertex);
+
+    Vertex<T>* vertex;
+
+    while(!candidates.empty()) {
+        vertex = candidates.front();
+        res.push_back(vertex->info);
+
+        for(auto edge : vertex->adj) {
+            adj = edge.dest;
+
+            adj->indegree--;
+            if(adj->indegree == 0) candidates.push(adj);
+        }
+
+        candidates.pop();
+    }
+
+    if(res.size() != vertexSet.size()) res.clear();
+
     return res;
 }
 
