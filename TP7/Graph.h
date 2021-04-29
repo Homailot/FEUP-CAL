@@ -91,8 +91,10 @@ class Edge {
 	Edge<T> *reverse = nullptr; // Fp07
 public:
 	Edge(Vertex<T> *o, Vertex<T> *d, double w);
+    Edge();
 	friend class Graph<T>;
 	friend class Vertex<T>;
+    bool operator<(const Edge<T> & edge) const;
 
 	double getWeight() const;
 	Vertex<T> *getOrig() const;
@@ -116,8 +118,20 @@ template <class T>
 Vertex<T> *Edge<T>::getDest() const {
 	return dest;
 }
+template<class T>
+bool Edge<T>::operator<(const Edge<T> &edge) const {
+    return weight > edge.weight;
+}
+
 
 /*************************** Graph  **************************/
+
+template<class T>
+struct CmpEdgePtrs {
+    bool operator()(const Edge<T> * lhs, const Edge<T> * rhs) const {
+        return lhs->getWeight() > rhs->getWeight();
+    }
+};
 
 template <class T>
 class Graph {
@@ -128,6 +142,7 @@ class Graph {
 	Vertex<T> * findSet(Vertex<T> * x);
 	void linkSets(Vertex<T> * x, Vertex<T> * y);
 	void dfsKruskalPath(Vertex<T> *v);
+    std::priority_queue<Edge<T>*, std::vector<Edge<T>*>, CmpEdgePtrs<T>> edgesToQueue();
 
 
 public:
@@ -143,6 +158,12 @@ public:
 	std::vector<Vertex<T>*> calculatePrim();
 	std::vector<Vertex<T>*> calculateKruskal();
 };
+
+template<class T>
+Edge<T>::Edge() {
+    orig = nullptr;
+    dest = nullptr;
+}
 
 
 template <class T>
@@ -200,10 +221,13 @@ bool Graph<T>::addBidirectionalEdge(const T &sourc, const T &dest, double w) {
     Vertex<T>* destVertex = findVertex(dest);
     if(destVertex == nullptr) return false;
 
-    sourceVertex->addEdge(destVertex, w);
-    destVertex->addEdge(sourceVertex, w);
+    Edge<T>* sourceDest = sourceVertex->addEdge(destVertex, w);
+    Edge<T>* destSource = destVertex->addEdge(sourceVertex, w);
 
-	return true;
+    sourceDest->reverse = destSource;
+    destSource->reverse = sourceDest;
+
+    return true;
 }
 
 template <class T>
@@ -289,6 +313,8 @@ Vertex<T> * Graph<T>::findSet(Vertex<T> * x) {
 	return x->path;
 }
 
+
+
 /**
  * Implementation of Kruskal's algorithm to find a minimum
  * spanning tree of an undirected connected graph (edges added with addBidirectionalEdge).
@@ -298,16 +324,81 @@ Vertex<T> * Graph<T>::findSet(Vertex<T> * x) {
  */
 template <class T>
 std::vector<Vertex<T>*> Graph<T>::calculateKruskal() {
-    // TODO
+    if(vertexSet.empty()) return vertexSet;
+    int edgesAccepted = 0;
+
+    for(Vertex<T>* vertex : vertexSet) {
+        vertex->visited = false;
+        vertex->path = nullptr;
+    }
+
+    std::priority_queue<Edge<T>*, std::vector<Edge<T>*>, CmpEdgePtrs<T>> edgeQueue = edgesToQueue();
+    for(Vertex<T>* vertex : vertexSet) {
+        makeSet(vertex);
+    }
+
+    Edge<T> curEdge;
+    while(edgesAccepted < getNumVertex() - 1) {
+        Edge<T>* edge = edgeQueue.top();
+        Vertex<T>* sourceSet = findSet(edge->orig);
+        Vertex<T>* destSet = findSet(edge->dest);
+
+        if(sourceSet != destSet) {
+            edge->selected = true;
+            edge->reverse->selected = true;
+            edgesAccepted++;
+            linkSets(sourceSet, destSet);
+        }
+
+        edgeQueue.pop();
+    }
+
+    dfsKruskalPath(vertexSet.front());
+
     return vertexSet;
 }
+
+#include <stack>
 
 /**
  * Auxiliary function to set the "path" field to make a spanning tree.
  */
 template <class T>
 void Graph<T>::dfsKruskalPath(Vertex<T> *v) {
-    //TODO
+    v->path = nullptr;
+
+    std::stack<Vertex<T>*> vertexStack;
+    Vertex<T>* curVertex, * nextVertex;
+    vertexStack.push(v);
+
+    while(!vertexStack.empty()) {
+        Vertex<T>* curVertex = vertexStack.top();
+        curVertex->visited = true;
+        vertexStack.pop();
+
+        for(Edge<T>* edge : curVertex->adj) {
+            if(edge->selected) {
+                nextVertex = edge->dest;
+                if(nextVertex->visited) continue;
+
+                nextVertex->path = curVertex;
+                vertexStack.push(edge->dest);
+            }
+        }
+    }
+}
+
+template<class T>
+std::priority_queue<Edge<T>*, std::vector<Edge<T>*>, CmpEdgePtrs<T>> Graph<T>::edgesToQueue() {
+    std::priority_queue<Edge<T>*, std::vector<Edge<T>*>, CmpEdgePtrs<T>> edgeQueue;
+
+    for(Vertex<T>* vertex : vertexSet) {
+        for(Edge<T>* edge : vertex->adj) {
+            edgeQueue.push(edge);
+        }
+    }
+
+    return edgeQueue;
 }
 
 #endif /* GRAPH_H_ */
