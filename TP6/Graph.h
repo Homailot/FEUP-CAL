@@ -206,7 +206,41 @@ void Graph<T>::unweightedShortestPath(const T &orig) {
 
 template<class T>
 void Graph<T>::dijkstraShortestPath(const T &origin) {
-    // TODO implement this
+    MutablePriorityQueue<Vertex<T>> vertexQueue;
+
+    Vertex<T> * origVertex = findVertex(origin);
+    Vertex<T> * newVertex, * nextVertex;
+    double newDist;
+    if(origVertex == NULL) return;
+
+    for(Vertex<T> * vertex : vertexSet) {
+        vertex->visited = false;
+        vertex->path = nullptr;
+        vertex->dist = INF;
+    }
+
+    origVertex->dist = 0;
+    vertexQueue.insert(origVertex);
+
+    while(!vertexQueue.empty()) {
+        newVertex = vertexQueue.extractMin();
+
+        for(Edge<T> edge : newVertex->adj) {
+            nextVertex = edge.dest;
+
+            newDist = newVertex->dist + edge.weight;
+            if(nextVertex->dist > newDist) {
+                nextVertex->dist = newDist;
+                nextVertex->path = newVertex;
+
+                if(!nextVertex->visited) {
+                    vertexQueue.insert(nextVertex);
+
+                    nextVertex->visited = true;
+                } else vertexQueue.decreaseKey(nextVertex);
+            }
+        }
+    }
 }
 
 
@@ -235,7 +269,7 @@ std::vector<T> Graph<T>::getPath(const T &origin, const T &dest) const{
 
         res.insert(res.begin(), destVertex->info);
     }
-    
+
     return res;
 }
 
