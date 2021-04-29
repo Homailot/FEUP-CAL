@@ -106,6 +106,7 @@ public:
     bool addEdge(const T &sourc, const T &dest, double w);
     int getNumVertex() const;
     std::vector<Vertex<T> *> getVertexSet() const;
+    std::vector<std::pair<Vertex<T>*,Edge<T>>> getEdges() const;
 
     // Fp06 - single source
     void unweightedShortestPath(const T &s);    //TODO...
@@ -246,7 +247,43 @@ void Graph<T>::dijkstraShortestPath(const T &origin) {
 
 template<class T>
 void Graph<T>::bellmanFordShortestPath(const T &orig) {
-    // TODO implement this
+    Vertex<T> * origVertex = findVertex(orig);
+    Vertex<T> * sourceVertex, * destVertex;
+    std::vector<std::pair<Vertex<T>*,Edge<T>>> edges = getEdges();
+    double newDist, weight;
+    if(origVertex == NULL) return;
+
+    for(Vertex<T> * vertex : vertexSet) {
+        vertex->path = nullptr;
+        vertex->dist = INF;
+    }
+
+    origVertex->dist = 0;
+
+    for(size_t i = 0; i < getNumVertex(); i++) {
+        for(std::pair<Vertex<T>*, Edge<T>> edge : edges) {
+            sourceVertex = edge.first;
+            destVertex = edge.second.dest;
+            weight = edge.second.weight;
+
+            newDist = sourceVertex->dist + weight;
+
+            if(destVertex->dist > newDist) {
+                destVertex->dist = newDist;
+                destVertex->path = sourceVertex;
+            }
+        }
+    }
+
+    for(std::pair<Vertex<T>*, Edge<T>> edge : edges) {
+        sourceVertex = edge.first;
+        destVertex = edge.second.dest;
+        weight = edge.second.weight;
+
+        if(sourceVertex->dist + weight < destVertex->dist) {
+            origVertex->dist = INF;
+        }
+    }
 }
 
 
@@ -287,6 +324,19 @@ std::vector<T> Graph<T>::getfloydWarshallPath(const T &orig, const T &dest) cons
     std::vector<T> res;
     // TODO implement this
     return res;
+}
+
+template<class T>
+std::vector<std::pair<Vertex<T>*,Edge<T>>> Graph<T>::getEdges() const {
+    std::vector<std::pair<Vertex<T>*,Edge<T>>> edges;
+
+    for(Vertex<T>* vertex: vertexSet) {
+        for(Edge<T> edge : vertex->adj) {
+            edges.push_back(std::make_pair(vertex, edge));
+        }
+    }
+
+    return edges;
 }
 
 
