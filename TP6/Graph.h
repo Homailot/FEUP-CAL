@@ -175,18 +175,31 @@ void Graph<T>::unweightedShortestPath(const T &orig) {
     std::queue<Vertex<T>*> vertexQueue;
 
     Vertex<T> * origVertex = findVertex(orig);
-    Vertex<T> * newVertex;
+    Vertex<T> * newVertex, * nextVertex;
     if(origVertex == NULL) return;
+
+    for(Vertex<T> * vertex : vertexSet) {
+        vertex->visited = false;
+        vertex->path = nullptr;
+    }
 
     vertexQueue.push(origVertex);
     origVertex->visited = true;
 
     while(!vertexQueue.empty()) {
         newVertex = vertexQueue.front();
-
-        for(newVertex->)
-
         vertexQueue.pop();
+
+        for(Edge<T> edge : newVertex->adj) {
+            nextVertex = edge.dest;
+
+            if(!nextVertex->visited) {
+                nextVertex->visited = true;
+                nextVertex->path = newVertex;
+
+                vertexQueue.push(nextVertex);
+            }
+        }
     }
 }
 
@@ -206,7 +219,23 @@ void Graph<T>::bellmanFordShortestPath(const T &orig) {
 template<class T>
 std::vector<T> Graph<T>::getPath(const T &origin, const T &dest) const{
     std::vector<T> res;
-    // TODO implement this
+
+    Vertex<T>* origVertex = findVertex(origin);
+    if(origVertex == NULL) return {};
+    Vertex<T>* destVertex = findVertex(dest);
+    if(destVertex == NULL) return {};
+
+    Vertex<T>* nextVertex;
+
+    res.push_back(destVertex->info);
+
+    while(destVertex != origVertex) {
+        destVertex = destVertex->path;
+        if(destVertex == NULL) return res;
+
+        res.insert(res.begin(), destVertex->info);
+    }
+    
     return res;
 }
 
