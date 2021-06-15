@@ -5,45 +5,39 @@
 #include <fstream>
 
 std::vector<int> computePrefix(std::string pattern) {
-    std::vector<int> prefix(pattern.size());
+    std::vector<int> pi(pattern.size());
 
     size_t patternSize = pattern.size();
-    prefix[0] = 0;
-    size_t j = 0; // j = k+1
+    pi[0] = 0;
+    int j = 0;
 
     for(size_t i = 1; i < patternSize; i++) {
         while(j > 0 && pattern[j] != pattern[i]) {
-            j = prefix[j-1];
+            j = pi[j-1];
         }
-
-        if(pattern[j] == pattern[i]) {
-            j++;
-        }
-
-        prefix[i] = j;
+        if(pattern[j] == pattern[i]) j++;
+        pi[i] = j;
     }
 
-    return prefix;
+    return pi;
 }
 
 int kmpMatcher(std::string text, std::string pattern) {
     computePrefix(pattern);
 
-    std::vector<int> prefix = computePrefix(pattern);
+    std::vector<int> pi = computePrefix(pattern);
     int numMatch = 0, matches = 0;
 
-    for(size_t i = 0; i < text.size(); i++) {
-        while(numMatch > 0 && pattern[numMatch] != text[i]) {
-            numMatch = prefix[numMatch - 1];
+    for(char ch : text) {
+        while(numMatch > 0 && pattern[numMatch] != ch) {
+            numMatch = pi[numMatch - 1]; // character does not match
         }
-
-        if(pattern[numMatch] == text[i]) {
-            numMatch++;
+        if(pattern[numMatch] == ch) {
+            numMatch++; // character matches
         }
-
         if(numMatch == pattern.size()) {
             matches++;
-            numMatch = prefix[numMatch - 1];
+            numMatch = pi[numMatch - 1];
         }
     }
 
